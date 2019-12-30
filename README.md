@@ -1,2 +1,3 @@
 # Giereczka
-Super giercia ;D
+
+Creators: Jan Zobniów, Arkadiusz Zych, Maciek Matuszewski
