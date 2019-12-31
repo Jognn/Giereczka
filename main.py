@@ -5,24 +5,24 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 class Mob:
-    def __init__(self, name, velocity, health, scene = None):
-        self.name = name
-        self.velocity = 1
-        self.health = health
-        self.scene = scene # Scena w jakiej sie znajduje
+    def __init__(self, image, **kwargs): #, name = None, starting_position = (0,0), velocity = 1, health = 100, scene = None
+        self.image = pygame.image.load(image)
+        self.name = kwargs.get('name', "Jerry")
+        self.x = kwargs.get('starting_position', (0,0))[0]
+        self.y = kwargs.get('starting_position', (0,0))[1]
+        self.velocity = kwargs.get('velocity', 1) | 1
+        self.health = kwargs.get('health', 100)
+        self.scene = kwargs.get('scene') # Scena w jakiej sie znajduje
+
+    def show(self):
+        Game.screen.blit(self.image, (self.x, self.y))
 
 class Player(Mob):
-    def __init__(self, name, image):
-        Mob.__init__(self, name, 1, 100, 10)
+    def __init__(self, image, name):
+        super().__init__(image, name = name, starting_position = (400, 300))
 
-        self.image = pygame.image.load(image)
-        self.x = 300 # Ustalam tutaj startowe polozenie
-        self.y = 200 
         self.width = 64 # Piksele
         self.height = 64 # Piksele
-    
-    def show(self): # TO DO: Przerzucic do klasy Mob
-        Game.screen.blit(self.image, (self.x, self.y))
     
     def movement(self):
         keys = pygame.key.get_pressed()
@@ -39,21 +39,25 @@ class Player(Mob):
             self.x += self.velocity
 
 class Game: # Wszystkie zmienne gry
+    pygame.init()
+    pygame.display.set_caption('Giereczka') # Ustawia nazwe okienka
+
     width = SCREEN_WIDTH
     height = SCREEN_HEIGHT
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # Tworzy okienko
-    pygame.display.set_caption('Giereczka') # Ustawia nazwe okienka
-    player = Player('Tomek', 'Resources/player.png')
+    player = Player('Resources/player.png', 'Tomek')
         
 
 class Scene:
     def __init__(self, name):
         self.name = name
         self.running = True
+        self.mobs = []
 
     def on_init(self):
-        pygame.init()
         Game.player.scene = self # Player's scene
+        self.mobs.append(Mob('Resources/goblin.png', name = 'Goblin1', starting_position = (200, 300), scene = self))
+        self.mobs.append(Mob('Resources/goblin.png', name = 'Goblin2', starting_position = (600, 300), scene = self))
 
     def on_event(self, event):
         if event.type == pygame.QUIT:
@@ -65,8 +69,10 @@ class Scene:
     def on_render(self):
         Game.screen.fill((123, 255, 231))
         Game.player.show()
-        pygame.display.update()
+        for mob in self.mobs: # Pokazuje wszystkie moby
+            mob.show()
 
+        pygame.display.update()
 
     def start(self):
         self.on_init()
@@ -76,7 +82,6 @@ class Scene:
             
             self.on_loop()
             self.on_render()
-
 
 
 if __name__ == "__main__":
