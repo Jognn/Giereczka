@@ -1,5 +1,4 @@
 import pygame
-from pygame import *
 
 # Screen parameters:
 SCREEN_WIDTH = 1280
