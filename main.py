@@ -111,7 +111,7 @@ class Level1:
     def __init__(self):
         Game.clock.tick(60) # Ilosc klatek
         self.running = True
-        self.background = pygame.image.load('Resources/background.jpg')
+        self.background = pygame.image.load('Resources/background.jpg').convert()
         self.mobs = [Game.player,
             Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
             Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
