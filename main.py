@@ -16,12 +16,15 @@ class Mob:
     def __init__(self, images, **kwargs):  # name = None, starting_position = (0,0), velocity = 1, health = 100, surface = None,  scene = None
         self.images = images
         self.current_image = pygame.image.load(images[0])
+        self.width = kwargs.get('width', 64)
+        self.height = kwargs.get('height', 64)
         self.name = kwargs.get('name', None)
         self.scene = kwargs.get('scene', None)  # Scena w jakiej sie znajduje
         self.surface = kwargs.get('surface', None)
 
         self.x = kwargs.get('starting_position', 0)[0]
         self.y = kwargs.get('starting_position', FLOOR_Y)[1]
+        self.hitbox = (self.x, self.y, self.width, self.height)
         self.velocity = kwargs.get('velocity', 1)
         self.health = kwargs.get('health', 100)
 
@@ -30,19 +33,21 @@ class Mob:
 
     def show(self):
         Game.screen.blit(self.current_image, (self.x, self.y))
+        pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
+
+    def change_hitbox(self):
+        self.hitbox = self.hitbox = (self.x, self.y, self.width, self.height)
 
 class Player(Mob):
     def __init__(self, images, **kwargs):
         super().__init__(images, **kwargs)
-
-        self.width = 64  # Piksele
-        self.height = 64  # Piksele
 
     def movement(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT]: self.move_left()
         if keys[pygame.K_RIGHT]: self.move_right()
+        self.change_hitbox()
 
     def move_left(self):
         self.moving_left = True
@@ -60,8 +65,6 @@ class Goblin(Mob):
     def __init__(self, images, **kwargs):
         super().__init__(images, **kwargs)
 
-        self.width = 64
-        self.height = 64
 
     def move(self):
         pozycja_gracza_l = Game.player.x + Game.player.width
@@ -83,6 +86,7 @@ class Goblin(Mob):
             else:
                 if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1])
                 self.x += self.velocity
+        self.change_hitbox() # Zmienia pozycje hitboxa
 
 class Game:  # Wszystkie zmienne gry
     pygame.init()
@@ -109,7 +113,9 @@ class Scene:
         self.running = True
         self.background = pygame.image.load('Resources/background.jpg')
         self.mobs = [Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
-                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self)]
+                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
+                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin3', starting_position=(800, FLOOR_Y), scene=self),
+                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin4', starting_position=(1000, FLOOR_Y), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-500), (LEVEL1_WIDTH, FLOOR_Y))
