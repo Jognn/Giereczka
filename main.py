@@ -92,6 +92,7 @@ class Game:  # Wszystkie zmienne gry
     pygame.init()
     pygame.display.set_caption('Giereczka')  # Ustawia nazwe okienka
     clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 22)
 
     width = SCREEN_WIDTH
     height = SCREEN_HEIGHT
@@ -101,7 +102,6 @@ class Game:  # Wszystkie zmienne gry
 
 class Level1:
     def __init__(self):
-        Game.clock.tick(60) # Ilosc klatek
         self.running = True
         self.background = pygame.image.load('Resources/background.jpg').convert() # .convert() - bardzo wazna rzecz!
         self.mobs = [Game.player,
@@ -125,6 +125,10 @@ class Level1:
         Game.screen.blit(self.background, (0, 0))
         for mob in self.mobs:
             mob.show()
+
+        fps = Game.font.render(str(int(Game.clock.get_fps())) + " fps", True, (0,240,0), None).convert_alpha()
+        Game.screen.blit(fps, (0, 0))
+        Game.clock.tick(60) # Ograniczna klatki
 
         pygame.display.update()
 
