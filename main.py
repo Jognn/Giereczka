@@ -13,9 +13,9 @@ FLOOR_Y = 500
 
 
 class Mob:
-    def __init__(self, images, **kwargs):  # name = None, starting_position = (0,0), velocity = 1, health = 100, surface = None,  scene = None
-        self.images = images
-        self.current_image = pygame.image.load(images[0])
+    def __init__(self, **kwargs):  # name = None, starting_position = (0,0), velocity = 1, health = 100, surface = None,  scene = None
+        self.images = kwargs.get('images', ['Resources/Mobs/default.png'])
+        self.current_image = pygame.image.load(self.images[0])
         self.width = kwargs.get('width', 64)
         self.height = kwargs.get('height', 64)
         self.name = kwargs.get('name', None)
@@ -39,8 +39,8 @@ class Mob:
         self.hitbox = self.hitbox = (self.x, self.y, self.width, self.height)
 
 class Player(Mob):
-    def __init__(self, images, **kwargs):
-        super().__init__(images, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def movement(self):
         keys = pygame.key.get_pressed()
@@ -62,11 +62,11 @@ class Player(Mob):
             self.moving_right = False
 
 class Goblin(Mob):
-    def __init__(self, images, **kwargs):
-        super().__init__(images, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
-    def move(self):
+    def movement(self):
         pozycja_gracza_l = Game.player.x + Game.player.width
         pozycja_gracza_p = Game.player.x - Game.player.width
 
@@ -91,12 +91,12 @@ class Goblin(Mob):
 class Game:  # Wszystkie zmienne gry
     pygame.init()
     pygame.display.set_caption('Giereczka')  # Ustawia nazwe okienka
-    pygame.time.delay(30)
+    pygame.time.delay(60)
 
     width = SCREEN_WIDTH
     height = SCREEN_HEIGHT
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Tworzy okienko
-    player = Player(['Resources/Mobs/player.png'], name='Tomek', velocity=5, starting_position=(0, FLOOR_Y))
+    player = Player(images=['Resources/Mobs/player.png'], name='Tomek', velocity=5, starting_position=(0, FLOOR_Y))
 
     # @classmethod
     # def load_image(cls, file):
@@ -112,10 +112,11 @@ class Scene:
         self.name = name
         self.running = True
         self.background = pygame.image.load('Resources/background.jpg')
-        self.mobs = [Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
-                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
-                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin3', starting_position=(800, FLOOR_Y), scene=self),
-                     Goblin(['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin4', starting_position=(1000, FLOOR_Y), scene=self)]
+        self.mobs = [Game.player,
+            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
+            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
+            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin3', starting_position=(800, FLOOR_Y), scene=self),
+            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin4', starting_position=(1000, FLOOR_Y), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-500), (LEVEL1_WIDTH, FLOOR_Y))
@@ -125,14 +126,12 @@ class Scene:
             self.running = False
 
     def on_loop(self):  # Wszystkie movementy i inne ify
-        Game.player.movement()
         for mob in self.mobs:
-            mob.move()
+            mob.movement()
 
-    def on_render(self):
+    def on_render(self): # Wszelkie renderowanie obrazow
         Game.screen.blit(self.background, (0, 0))
-        Game.player.show()
-        for mob in self.mobs:  # Pokazuje wszystkie moby
+        for mob in self.mobs:
             mob.show()
 
         pygame.display.update()
