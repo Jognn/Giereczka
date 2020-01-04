@@ -15,7 +15,7 @@ FLOOR_Y = 500
 class Mob:
     def __init__(self, **kwargs):  # name = None, starting_position = (0,0), velocity = 1, health = 100, surface = None,  scene = None
         self.images = kwargs.get('images', ['Resources/Mobs/default.png'])
-        self.current_image = pygame.image.load(self.images[0])
+        self.current_image = pygame.image.load(self.images[0]).convert_alpha() # .convert_alpha() - any good?
         self.width = kwargs.get('width', 64)
         self.height = kwargs.get('height', 64)
         self.name = kwargs.get('name', None)
@@ -76,7 +76,7 @@ class Goblin(Mob):
             if self.x - self.velocity <= pozycja_gracza_l:
                 self.moving_left = False
             else:
-                if not self.current_image == self.images[0]: self.current_image = pygame.image.load(self.images[0])
+                if not self.current_image == self.images[0]: self.current_image = pygame.image.load(self.images[0]).convert_alpha()
                 self.x -= self.velocity
         #Ruch w prawo
         elif self.x < pozycja_gracza_p:
@@ -84,7 +84,7 @@ class Goblin(Mob):
             if self.x + self.velocity >= pozycja_gracza_p:
                 self.moving_right = False
             else:
-                if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1])
+                if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1]).convert_alpha()
                 self.x += self.velocity
         self.change_hitbox() # Zmienia pozycje hitboxa
 
@@ -98,20 +98,12 @@ class Game:  # Wszystkie zmienne gry
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Tworzy okienko
     player = Player(images=['Resources/Mobs/player.png'], name='Tomek', velocity=5, starting_position=(0, FLOOR_Y))
 
-    # @classmethod
-    # def load_image(cls, file):
-    #     try:
-    #         surface = pygame.image.load(file)
-    #     except pygame.error:
-    #         raise SystemExit(f'Could not load the image "{image}" {pygame.get_error()}')
-    #     return surface.convert()
-
 
 class Level1:
     def __init__(self):
         Game.clock.tick(60) # Ilosc klatek
         self.running = True
-        self.background = pygame.image.load('Resources/background.jpg').convert()
+        self.background = pygame.image.load('Resources/background.jpg').convert() # .convert() - bardzo wazna rzecz!
         self.mobs = [Game.player,
             Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
             Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
