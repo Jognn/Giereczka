@@ -91,7 +91,7 @@ class Goblin(Mob):
 class Game:  # Wszystkie zmienne gry
     pygame.init()
     pygame.display.set_caption('Giereczka')  # Ustawia nazwe okienka
-    pygame.time.delay(60)
+    clock = pygame.time.Clock()
 
     width = SCREEN_WIDTH
     height = SCREEN_HEIGHT
@@ -107,9 +107,9 @@ class Game:  # Wszystkie zmienne gry
     #     return surface.convert()
 
 
-class Scene:
-    def __init__(self, name):
-        self.name = name
+class Level1:
+    def __init__(self):
+        Game.clock.tick(60) # Ilosc klatek
         self.running = True
         self.background = pygame.image.load('Resources/background.jpg')
         self.mobs = [Game.player,
@@ -146,5 +146,5 @@ class Scene:
 
 
 if __name__ == "__main__":
-    scena_1 = Scene('Level 1')
-    scena_1.start()
+    leve1 = Level1()
+    leve1.start()
