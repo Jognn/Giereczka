@@ -42,7 +42,7 @@ class Mob:
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
     def change_hitbox(self):
-        self.hitbox = self.hitbox = (self.x, self.y, self.width, self.height)
+        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
 
 class Player(Mob):
     def __init__(self, **kwargs):
@@ -66,38 +66,41 @@ class Player(Mob):
 
     def move_right(self):
         self.moving_right = False
-        if self.scene.background2_position[0] == 0 or self.x < Game.width/2: # self.x < 1210 - blad ze zdjeciem! (zostawic na razie)
+        if self.scene.background2_position[0] == 0 or self.x < Game.width/2:
             if self.x + self.velocity < 1220: #1220 - blad ze zdjeciem! (zostawic na razie), powinno byc zwiazane z Game.width
                 self.x += self.velocity
         else:
             self.scene.background1_position[0] -= self.velocity
             self.scene.background2_position[0] -= self.velocity
+
+
 class Goblin(Mob):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-
     def movement(self):
-        pozycja_gracza_l = Game.player.x + Game.player.width
-        pozycja_gracza_p = Game.player.x - Game.player.width
+        pozycja_gracza_l = Game.player.hitbox.left
+        pozycja_gracza_p = Game.player.hitbox.right
 
         #Ruch w lewo
-        if self.x > pozycja_gracza_l:
+        if self.hitbox.left > pozycja_gracza_p:
             self.moving_left = True
-            if self.x - self.velocity <= pozycja_gracza_l:
+            if self.hitbox.left - self.velocity <= pozycja_gracza_l:
                 self.moving_left = False
             else:
                 if not self.current_image == self.images[0]: self.current_image = pygame.image.load(self.images[0]).convert_alpha()
                 self.x -= self.velocity
+            # if Game.player.moving_right
         #Ruch w prawo
-        elif self.x < pozycja_gracza_p:
+        elif self.hitbox.right < pozycja_gracza_l:
             self.moving_right = True
-            if self.x + self.velocity >= pozycja_gracza_p:
+            if self.hitbox.right + self.velocity >= pozycja_gracza_l:
                 self.moving_right = False
             else:
                 if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1]).convert_alpha()
                 self.x += self.velocity
         self.change_hitbox() # Zmienia pozycje hitboxa
+
 
 class Game:  # Wszystkie zmienne gry
     pygame.init()
