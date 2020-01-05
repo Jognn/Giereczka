@@ -27,6 +27,7 @@ class Mob:
         self.name = kwargs.get('name', None)
         self.scene = kwargs.get('scene', None)  # Scena w jakiej sie znajduje
         self.surface = kwargs.get('surface', None)
+        self.frame = 0
 
         self.x = kwargs.get('starting_position', 0)[0]
         self.y = kwargs.get('starting_position', FLOOR_Y)[1]
@@ -75,6 +76,17 @@ class Player(Mob):
             self.scene.background1_position[0] -= self.velocity
             self.scene.background2_position[0] -= self.velocity
 
+    def show(self):
+        if Game.frame < 10:
+            self.current_image = pygame.image.load(self.images[0]).convert_alpha()
+        elif Game.frame  < 20:
+            self.current_image = pygame.image.load(self.images[1]).convert_alpha()
+        elif Game.frame  < 30:
+            self.current_image = pygame.image.load(self.images[2]).convert_alpha()
+
+        Game.screen.blit(self.current_image, (self.x, self.y))
+        pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
+
 
 class Goblin(Mob):
     def __init__(self, **kwargs):
@@ -114,13 +126,15 @@ class Game:  # Wszystkie zmienne gry
     clock = pygame.time.Clock()
     font_fps = pygame.font.Font(None, 22)
     font_debug = pygame.font.Font(None, 24)
+    frame = 0
 
     width = SCREEN_WIDTH
     height = SCREEN_HEIGHT
     level1_width = LEVEL1_WIDTH
     level1_height = LEVEL1_HEIGHT
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Tworzy okienko
-    player = Player(images=['Resources/Mobs/player.png'], name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR_Y))
+    player = Player(images=['Resources/Mobs/player1.png', 'Resources/Mobs/player2.png', 'Resources/Mobs/player3.png'],
+                    name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR_Y))
 
 
 class Level1:
@@ -154,12 +168,12 @@ class Level1:
             mob.show()
 
         fps = Game.font_fps.render(str(int(Game.clock.get_fps())) + " fps", True, (0,240,0), None).convert_alpha()
-        backgrounds = Game.font_debug.render(f"Player: {(Game.player.x, Game.player.y)}  Background1: {tuple(self.background1_position)}  Background2: {tuple(self.background2_position)}", True, (0, 0, 0), None).convert_alpha()
+        backgrounds = Game.font_debug.render(f"Player: {(Game.player.x, Game.player.y)}  Background1: {tuple(self.background1_position)}  Background2: {tuple(self.background2_position)}   Frame", True, (0, 0, 0), None).convert_alpha()
         moving = Game.font_debug.render(f"Moving Left: {Game.player.moving_left}  Moving Right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
         Game.screen.blit(fps, (0, 0))
         Game.screen.blit(backgrounds, (0, fps.get_height() + 2))
         Game.screen.blit(moving, (0 , backgrounds.get_height()*2 + 2))
-        Game.clock.tick(60) # Ograniczna klatki
+        Game.clock.tick(30) # Ograniczna klatki
 
         pygame.display.update()
 
@@ -170,6 +184,7 @@ class Level1:
 
             self.on_loop()
             self.on_render()
+            Game.frame = (Game.frame+1) % 30
 
 
 if __name__ == "__main__":
