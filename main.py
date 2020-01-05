@@ -4,6 +4,8 @@ import pygame
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 
+FRAME_RATE = 30
+
 #Level 1 parameters:
 LEVEL1_WIDTH = 1280*2
 LEVEL1_HEIGHT = 720
@@ -20,8 +22,12 @@ BG2_STARTING_Y = 0
 
 class Mob:
     def __init__(self, **kwargs):  # name = None, starting_position = (0,0), velocity = 1, health = 100, surface = None,  scene = None
-        self.images = kwargs.get('images', ['Resources/Mobs/default.png'])
-        self.current_image = pygame.image.load(self.images[0]).convert_alpha() # .convert_alpha() - any good?
+        self.images_stoi_prawo = kwargs.get('images_stoi_prawo', ['Resources/Mobs/default.png'])
+        self.images_stoi_lewo = kwargs.get('images_stoi_lewo', ['Resources/Mobs/default.png'])
+        self.images_idzie_prawo = kwargs.get('images_idzie_prawo', ['Resources/Mobs/default.png'])
+        self.images_idzie_lewo = kwargs.get('images_idzie_lewo', ['Resources/Mobs/default.png'])
+        self.current_image = pygame.image.load(self.images_stoi_prawo[0]).convert_alpha()
+
         self.width = kwargs.get('width', 64)
         self.height = kwargs.get('height', 64)
         self.name = kwargs.get('name', None)
@@ -37,6 +43,10 @@ class Mob:
 
         self.moving_left = False
         self.moving_right = False
+        self.turned_right = True
+        self.turned_left = False
+        self.moving_background_left = False
+        self.moving_background_right = True
 
     def show(self):
         Game.screen.blit(self.current_image, (self.x, self.y))
@@ -53,37 +63,54 @@ class Player(Mob):
         keys = pygame.key.get_pressed()
         self.moving_left = False
         self.moving_right = False
+        self.moving_background_left = False
+        self.moving_background_right = False
 
         if keys[pygame.K_LEFT]: self.move_left()
         if keys[pygame.K_RIGHT]: self.move_right()
         self.change_hitbox()
 
     def move_left(self):
+        self.turned_right = False
+        self.turned_left = True
+        self.moving_left = True
         if self.scene.background1_position[0] == 0 or (self.scene.background2_position[0] == 0 and self.x > Game.width/2):
             if self.x > self.velocity:
                 self.x -= self.velocity
         else:
-            self.moving_left = True
+            self.moving_background_left = True
             self.scene.background1_position[0] += self.velocity
             self.scene.background2_position[0] += self.velocity
 
     def move_right(self):
+        self.turned_left = False
+        self.moving_right = True
+        self.turned_right = True
         if self.scene.background2_position[0] == 0 or self.x < Game.width/2:
             if self.x + self.velocity < 1220: #1220 - blad ze zdjeciem! (zostawic na razie), powinno byc zwiazane z Game.width
                 self.x += self.velocity
         else:
-            self.moving_right = True
+            self.moving_background_right = True
             self.scene.background1_position[0] -= self.velocity
             self.scene.background2_position[0] -= self.velocity
 
     def show(self):
-        if Game.frame < 10:
-            self.current_image = pygame.image.load(self.images[0]).convert_alpha()
-        elif Game.frame  < 20:
-            self.current_image = pygame.image.load(self.images[1]).convert_alpha()
-        elif Game.frame  < 30:
-            self.current_image = pygame.image.load(self.images[2]).convert_alpha()
+        if self.frame >= FRAME_RATE:
+            self.frame = 0
 
+        self.frame += 1
+
+        if self.moving_left:
+            self.current_image = self.images_idzie_lewo[(self.frame//5)%3]
+        elif self.moving_right:
+            self.current_image = self.images_idzie_prawo[(self.frame//5)%3]
+        else:
+            if self.turned_left:
+                self.current_image = self.images_stoi_lewo[(self.frame//5)%3]
+            elif self.turned_right:
+                self.current_image = self.images_stoi_prawo[(self.frame//5)%3]
+
+        self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
@@ -113,9 +140,9 @@ class Goblin(Mob):
                 if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1]).convert_alpha()
                 self.x += self.velocity
         #Ruch wzgledny
-        if Game.player.moving_left:
+        if Game.player.moving_background_left:
             self.x += Game.player.velocity
-        if Game.player.moving_right:
+        if Game.player.moving_background_right:
             self.x -= Game.player.velocity
         self.change_hitbox() # Zmienia pozycje hitboxa
 
@@ -133,7 +160,10 @@ class Game:  # Wszystkie zmienne gry
     level1_width = LEVEL1_WIDTH
     level1_height = LEVEL1_HEIGHT
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Tworzy okienko
-    player = Player(images=['Resources/Mobs/player1.png', 'Resources/Mobs/player2.png', 'Resources/Mobs/player3.png'],
+    player = Player(images_stoi_prawo=['Resources/Mobs/Player/player_stoi_prawo1.png', 'Resources/Mobs/Player/player_stoi_prawo2.png', 'Resources/Mobs/Player/player_stoi_prawo3.png'],
+                    images_stoi_lewo= ['Resources/Mobs/Player/player_stoi_lewo1.png', 'Resources/Mobs/Player/player_stoi_lewo2.png', 'Resources/Mobs/Player/player_stoi_lewo3.png'],
+                    images_idzie_prawo = ['Resources/Mobs/Player/player_idzie_prawo1.png', 'Resources/Mobs/Player/player_idzie_prawo2.png', 'Resources/Mobs/Player/player_idzie_prawo3.png'],
+                    images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png'],
                     name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR_Y))
 
 
@@ -144,11 +174,11 @@ class Level1:
         self.background1_position = [0,0]
         self.background2 = pygame.image.load('Resources/b.jpg').convert()  # .convert() - bardzo wazna rzecz!
         self.background2_position = [self.background1.get_width(), self.background1_position[1]]
-        self.mobs = [Game.player,
-            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
-            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
-            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin3', starting_position=(800, FLOOR_Y), scene=self),
-            Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin4', starting_position=(1000, FLOOR_Y), scene=self)]
+        self.mobs = [Game.player]
+            # Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin1', starting_position=(200, FLOOR_Y), scene=self),
+            # Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin2', starting_position=(600, FLOOR_Y), scene=self),
+            # Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin3', starting_position=(800, FLOOR_Y), scene=self),
+            # Goblin(images=['Resources/Mobs/goblin_lewo.png', 'Resources/Mobs/goblin_prawo.png'], name='Goblin4', starting_position=(1000, FLOOR_Y), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-500), (LEVEL1_WIDTH, FLOOR_Y))
@@ -168,12 +198,13 @@ class Level1:
             mob.show()
 
         fps = Game.font_fps.render(str(int(Game.clock.get_fps())) + " fps", True, (0,240,0), None).convert_alpha()
-        backgrounds = Game.font_debug.render(f"Player: {(Game.player.x, Game.player.y)}  Background1: {tuple(self.background1_position)}  Background2: {tuple(self.background2_position)}   Frame", True, (0, 0, 0), None).convert_alpha()
-        moving = Game.font_debug.render(f"Moving Left: {Game.player.moving_left}  Moving Right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
+        backgrounds = Game.font_debug.render(f"Turned_left: {Game.player.turned_left}  Turned_right: {Game.player.turned_right}  " +
+                                             f"Moving_left: {Game.player.moving_left}  Moving_right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
+        moving = Game.font_debug.render(f"Moving bg left: {Game.player.moving_background_left}  Moving bg right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
         Game.screen.blit(fps, (0, 0))
         Game.screen.blit(backgrounds, (0, fps.get_height() + 2))
         Game.screen.blit(moving, (0 , backgrounds.get_height()*2 + 2))
-        Game.clock.tick(30) # Ograniczna klatki
+        Game.clock.tick(FRAME_RATE) # Ograniczna klatki
 
         pygame.display.update()
 
@@ -184,7 +215,7 @@ class Level1:
 
             self.on_loop()
             self.on_render()
-            Game.frame = (Game.frame+1) % 30
+            Game.frame = (Game.frame+1) % FRAME_RATE
 
 
 if __name__ == "__main__":
