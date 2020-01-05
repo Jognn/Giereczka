@@ -5,6 +5,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 
 FRAME_RATE = 30
+FRAMES_PER_IMAGE = 3
 
 #Level 1 parameters:
 LEVEL1_WIDTH = 1280*2
@@ -94,14 +95,14 @@ class Player(Mob):
 
     def show(self):
         if self.moving_left:
-            self.current_image = self.images_idzie_lewo[(Game.frame//5)%3]
+            self.current_image = self.images_idzie_lewo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         elif self.moving_right:
-            self.current_image = self.images_idzie_prawo[(Game.frame//5)%3]
+            self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         else:
             if self.turned_left:
-                self.current_image = self.images_stoi_lewo[(Game.frame//5)%3]
+                self.current_image = self.images_stoi_lewo[(Game.frame//FRAMES_PER_IMAGE) % 3]
             elif self.turned_right:
-                self.current_image = self.images_stoi_prawo[(Game.frame//5)%3]
+                self.current_image = self.images_stoi_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
 
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
