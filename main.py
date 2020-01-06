@@ -37,6 +37,8 @@ class Mob:
         self.images_stoi_lewo = kwargs.get('images_stoi_lewo', ['Resources/Mobs/default.png'])
         self.images_idzie_prawo = kwargs.get('images_idzie_prawo', ['Resources/Mobs/default.png'])
         self.images_idzie_lewo = kwargs.get('images_idzie_lewo', ['Resources/Mobs/default.png'])
+        self.images_skacze_prawo = kwargs.get('images_skacze_prawo', ['Resources/Mobs/Player/player_skacze_prawo1.png'])
+        self.images_skacze_lewo = kwargs.get('images_skacze_lewo', ['Resources/Mobs/Player/player_skacze_lewo1.png'])
         self.current_image = pygame.image.load(self.images_stoi_prawo[0]).convert_alpha()
 
         self.name = kwargs.get('name', None)
@@ -118,6 +120,12 @@ class Player(Mob):
             elif self.turned_right:
                 self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
 
+        if self.jumping and self.turned_left:
+            self.current_image = self.images_skacze_lewo[(Game.frame//FRAMES_PER_IMAGE) % 1]
+        elif self.jumping and self.turned_right:
+            self.current_image= self.images_skacze_prawo[(Game.frame//FRAMES_PER_IMAGE) % 1]
+
+
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
@@ -186,6 +194,8 @@ class Game:  # Wszystkie zmienne gry
                     images_stoi_lewo= ['Resources/Mobs/Player/player_stoi_lewo1.png', 'Resources/Mobs/Player/player_stoi_lewo2.png', 'Resources/Mobs/Player/player_stoi_lewo3.png', 'Resources/Mobs/Player/player_stoi_lewo2.png'],
                     images_idzie_prawo = ['Resources/Mobs/Player/player_idzie_prawo1.png', 'Resources/Mobs/Player/player_idzie_prawo2.png', 'Resources/Mobs/Player/player_idzie_prawo3.png'],
                     images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png'],
+                    images_skacze_prawo = ['Resources/Mobs/Player/player_skacze_prawo1.png'],
+                    images_skacze_lewo = ['Resources/Mobs/Player/player_skacze_lewo1.png'],
                     name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
 class Info:
