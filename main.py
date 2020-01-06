@@ -27,6 +27,9 @@ BG1_STARTING_Y = 0
 BG2_STARTING_X = 2560
 BG2_STARTING_Y = 0
 
+#Player parameters
+JUMP_HEIGHT = 0.25
+
 
 class Mob:
     def __init__(self, **kwargs):  # name = None, starting_position = (0,FLOOR), velocity = 1, health = 100, scene = None
@@ -123,7 +126,7 @@ class Player(Mob):
                 neg = 1
                 if self.jumpCount < 0:
                     neg = -1
-                self.y -= (self.jumpCount ** 2) * 0.25 * neg
+                self.y -= (self.jumpCount ** 2) * JUMP_HEIGHT * neg
                 self.jumpCount -= 1
             else:
                 self.jumping = False
