@@ -107,9 +107,9 @@ class Player(Mob):
             self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         else:
             if self.turned_left:
-                self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
+                self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting       3 czy 4 klatki?
             elif self.turned_right:
-                self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
+                self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting       3 czy 4 klatki?
 
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
