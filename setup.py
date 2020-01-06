@@ -1,6 +1,6 @@
 import cx_Freeze
 
-executables = [cx_Freeze.Executable("main.py")]
+executables = [cx_Freeze.Executable("main.py", base = "Win32GUI")]
 
 player = 'F:/Giereczka/Resources/Mobs/Player'
 
