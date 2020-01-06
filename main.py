@@ -107,9 +107,9 @@ class Player(Mob):
             self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         else:
             if self.turned_left:
-                self.current_image = self.images_stoi_lewo[(Game.frame//FRAMES_PER_IMAGE*2) % 3] # FRAMES_PER_IMAGE*2 - experimenting
+                self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
             elif self.turned_right:
-                self.current_image = self.images_stoi_prawo[(Game.frame//FRAMES_PER_IMAGE*2) % 3] # FRAMES_PER_IMAGE*2 - experimenting
+                self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
 
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
@@ -163,8 +163,8 @@ class Game:  # Wszystkie zmienne gry
     level1_height = LEVEL1_HEIGHT
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Tworzy okienko
 
-    player = Player(images_stoi_prawo=['Resources/Mobs/Player/player_stoi_prawo1.png', 'Resources/Mobs/Player/player_stoi_prawo2.png', 'Resources/Mobs/Player/player_stoi_prawo3.png'],
-                    images_stoi_lewo= ['Resources/Mobs/Player/player_stoi_lewo1.png', 'Resources/Mobs/Player/player_stoi_lewo2.png', 'Resources/Mobs/Player/player_stoi_lewo3.png'],
+    player = Player(images_stoi_prawo=['Resources/Mobs/Player/player_stoi_prawo1.png', 'Resources/Mobs/Player/player_stoi_prawo2.png', 'Resources/Mobs/Player/player_stoi_prawo3.png', 'Resources/Mobs/Player/player_stoi_prawo2.png'],
+                    images_stoi_lewo= ['Resources/Mobs/Player/player_stoi_lewo1.png', 'Resources/Mobs/Player/player_stoi_lewo2.png', 'Resources/Mobs/Player/player_stoi_lewo3.png', 'Resources/Mobs/Player/player_stoi_lewo2.png'],
                     images_idzie_prawo = ['Resources/Mobs/Player/player_idzie_prawo1.png', 'Resources/Mobs/Player/player_idzie_prawo2.png', 'Resources/Mobs/Player/player_idzie_prawo3.png'],
                     images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png'],
                     name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR))
