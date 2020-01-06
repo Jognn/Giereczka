@@ -90,12 +90,10 @@ class Player(Mob):
         self.turned_right = False
         self.turned_left = True
         self.moving_left = True
-        #Zmien x playera
-        if Camera.background1_position[0] in range(-2, 2) or self.hitbox.centerx > self.starting_x + self.width:
+        if Camera.backgrounds[0][1][0] in range(-2, 2) or self.hitbox.centerx > self.starting_x + self.width:
             #Warunek nie wyjsca poza mape
             if self.x > self.velocity:
                 self.x -= self.velocity
-        #Przesun backgrounds
         else:
             Camera.move_backgrounds_left()
 
@@ -103,8 +101,7 @@ class Player(Mob):
         self.turned_left = False
         self.moving_right = True
         self.turned_right = True
-        #Zmien x playera
-        if Camera.background2_position[0] in range(-2, 2) or self.hitbox.centerx < self.starting_x:
+        if Camera.backgrounds[1][1][0] in range(-2, 2) or self.hitbox.centerx < self.starting_x:
             # Warunek nie wyjsca poza mape
             if self.hitbox.right + self.velocity < Game.width:
                 self.x += self.velocity
@@ -201,28 +198,21 @@ class Game:  # Wszystkie zmienne gry
 
 
 class Camera:
-    focus = Game.player
-    background1 = pygame.image.load('Resources/b.jpg').convert()  # .convert() - bardzo wazna rzecz!
-    background1_position = [0, 0]
-    background2 = pygame.image.load('Resources/b.jpg').convert()  # .convert() - bardzo wazna rzecz!
-    background2_position = [background1.get_width(), background1_position[1]]
-
+    focus = Game.player # Obecny target kamery
     moving_left = False
     moving_right = False
 
-    #backgrounds = [[pygame.image.load('Resources/b.jpg').convert(), [1280*i, 0]] for i in range (2)]
+    backgrounds = [[pygame.image.load('Resources/b.jpg').convert(), (2560*i, 0)] for i in range (2)]# [*Surface*, (x,y)]
 
     @classmethod
     def move_backgrounds_left(cls):
         cls.moving_left = True
-        cls.background1_position[0] += cls.focus.velocity
-        cls.background2_position[0] += cls.focus.velocity
+        cls.backgrounds= [[background[0], (background[1][0] + cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
 
     @classmethod
     def move_backgrounds_right(cls):
         cls.moving_right = True
-        cls.background1_position[0] -= cls.focus.velocity
-        cls.background2_position[0] -= cls.focus.velocity
+        cls.backgrounds= [[background[0], (background[1][0] - cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
 
     @classmethod
     def update(cls):
@@ -249,7 +239,7 @@ class Info:
 
     @classmethod
     def debug(cls, ref):
-        debug_1 = f"Background1: {tuple(Camera.background1_position)}    Background2: {tuple(Camera.background2_position)}    " +\
+        debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
                   f"Player.hitbox.left: {Game.player.hitbox.left}    Player.hitbox.right: {Game.player.hitbox.right}    Starting_x: {Game.player.starting_x}"
         debug_2 = f"Camera.moving_left: {Camera.moving_left}    Camera.moving_right: {Camera.moving_right}"
 
@@ -300,8 +290,9 @@ class Level1:
         Game.player.jump()
 
     def on_render(self): # Wszelkie renderowanie obrazow
-        Game.screen.blit(Camera.background1, (Camera.background1_position[0], Camera.background1_position[1]))
-        Game.screen.blit(Camera.background2, (Camera.background2_position[0], Camera.background2_position[1]))
+        for background in Camera.backgrounds:
+            Game.screen.blit(background[0], background[1])
+
         for mob in self.mobs:
             mob.show()
             Info.show_height(mob)
