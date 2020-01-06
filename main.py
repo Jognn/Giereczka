@@ -5,8 +5,8 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 
 #Frame parameters
-FRAME_RATE = 30
-FRAMES_PER_IMAGE = 3
+FRAME_RATE = 60
+FRAMES_PER_IMAGE = 10
 
 #Meter
 PIXELS_PER_METER = 8
@@ -61,8 +61,6 @@ class Mob:
         self.moving_right = False
         self.turned_right = True
         self.turned_left = False
-        self.moving_background_left = False
-        self.moving_background_right = True
         self.jumping = False
         self.jumpCount = 10
 
@@ -73,6 +71,7 @@ class Mob:
     def change_hitbox(self):
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
 
+
 class Player(Mob):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -81,8 +80,7 @@ class Player(Mob):
         keys = pygame.key.get_pressed()
         self.moving_left = False
         self.moving_right = False
-        self.moving_background_left = False
-        self.moving_background_right = False
+        Camera.update()
 
         if keys[pygame.K_LEFT]: self.move_left()
         if keys[pygame.K_RIGHT]: self.move_right()
@@ -92,31 +90,29 @@ class Player(Mob):
         self.turned_right = False
         self.turned_left = True
         self.moving_left = True
-        if self.scene.background1_position[0] == 0 or (self.scene.background2_position[0] == 0 and self.x > self.starting_x):
+        if Camera.backgrounds[0][1][0] in range(-2, 2) or self.hitbox.centerx > self.starting_x + self.width:
+            #Warunek nie wyjsca poza mape
             if self.x > self.velocity:
                 self.x -= self.velocity
         else:
-            self.moving_background_left = True
-            self.scene.background1_position[0] += self.velocity
-            self.scene.background2_position[0] += self.velocity
+            Camera.move_backgrounds_left()
 
     def move_right(self):
         self.turned_left = False
         self.moving_right = True
         self.turned_right = True
-        if self.scene.background2_position[0] == 0 or self.x < self.starting_x:
-            if self.x + self.velocity < 1220: #1220 - blad ze zdjeciem! (zostawic na razie), powinno byc zwiazane z Game.width
+        if Camera.backgrounds[1][1][0] in range(-2, 2) or self.hitbox.centerx < self.starting_x:
+            # Warunek nie wyjsca poza mape
+            if self.hitbox.right + self.velocity < Game.width:
                 self.x += self.velocity
         else:
-            self.moving_background_right = True
-            self.scene.background1_position[0] -= self.velocity
-            self.scene.background2_position[0] -= self.velocity
+            Camera.move_backgrounds_right()
 
     def show(self):
         if self.moving_left:
-            self.current_image = self.images_idzie_lewo[(Game.frame//FRAMES_PER_IMAGE) % 3]
+            self.current_image = self.images_idzie_lewo[(Game.frame//FRAMES_PER_IMAGE) % 4]
         elif self.moving_right:
-            self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
+            self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 4]
         else:
             if self.turned_left:
                 self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
@@ -129,7 +125,7 @@ class Player(Mob):
             self.current_image= self.images_skacze_prawo[(Game.frame//FRAMES_PER_IMAGE) % 1]
 
 
-        self.current_image = pygame.image.load(self.current_image)
+        self.current_image = pygame.image.load(self.current_image).convert_alpha()
         Game.screen.blit(self.current_image, (self.x, self.y))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
@@ -156,7 +152,6 @@ class Goblin(Mob):
     def movement(self):
         pozycja_gracza_l = Game.player.hitbox.left
         pozycja_gracza_p = Game.player.hitbox.right
-
         #Ruch w lewo
         if self.hitbox.left > pozycja_gracza_p:
             self.moving_left = True
@@ -174,10 +169,10 @@ class Goblin(Mob):
                 if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1]).convert_alpha()
                 self.x += self.velocity
         #Ruch wzgledny
-        if Game.player.moving_background_left:
-            self.x += Game.player.velocity
-        if Game.player.moving_background_right:
-            self.x -= Game.player.velocity
+        if Camera.moving_left:
+            self.x += Camera.focus.velocity
+        if Camera.moving_right:
+            self.x -= Camera.focus.velocity
         self.change_hitbox() # Zmienia pozycje hitboxa
 
 
@@ -195,11 +190,35 @@ class Game:  # Wszystkie zmienne gry
 
     player = Player(images_stoi_prawo=['Resources/Mobs/Player/player_stoi_prawo1.png', 'Resources/Mobs/Player/player_stoi_prawo2.png', 'Resources/Mobs/Player/player_stoi_prawo3.png', 'Resources/Mobs/Player/player_stoi_prawo2.png'],
                     images_stoi_lewo= ['Resources/Mobs/Player/player_stoi_lewo1.png', 'Resources/Mobs/Player/player_stoi_lewo2.png', 'Resources/Mobs/Player/player_stoi_lewo3.png', 'Resources/Mobs/Player/player_stoi_lewo2.png'],
-                    images_idzie_prawo = ['Resources/Mobs/Player/player_idzie_prawo1.png', 'Resources/Mobs/Player/player_idzie_prawo2.png', 'Resources/Mobs/Player/player_idzie_prawo3.png'],
-                    images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png'],
+                    images_idzie_prawo = ['Resources/Mobs/Player/player_idzie_prawo1.png', 'Resources/Mobs/Player/player_idzie_prawo2.png', 'Resources/Mobs/Player/player_idzie_prawo3.png', 'Resources/Mobs/Player/player_idzie_prawo2.png'],
+                    images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png', 'Resources/Mobs/Player/player_idzie_lewo2.png'],
                     images_skacze_prawo = ['Resources/Mobs/Player/player_skacze_prawo1.png'],
                     images_skacze_lewo = ['Resources/Mobs/Player/player_skacze_lewo1.png'],
-                    name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR))
+                    name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
+
+
+class Camera:
+    focus = Game.player # Obecny target kamery
+    moving_left = False
+    moving_right = False
+
+    backgrounds = [[pygame.image.load('Resources/b.jpg').convert(), (2560*i, 0)] for i in range (2)]# [*Surface*, (x,y)]
+
+    @classmethod
+    def move_backgrounds_left(cls):
+        cls.moving_left = True
+        cls.backgrounds= [[background[0], (background[1][0] + cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
+
+    @classmethod
+    def move_backgrounds_right(cls):
+        cls.moving_right = True
+        cls.backgrounds= [[background[0], (background[1][0] - cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
+
+    @classmethod
+    def update(cls):
+        cls.moving_left = False
+        cls.moving_right = False
+
 
 class Info:
     show_fps = SHOW_FPS
@@ -208,23 +227,21 @@ class Info:
     font_fps = pygame.font.Font(None, FPS_FONT_SIZE)
     font_debug = pygame.font.Font(None, DEBUG_FONT_SIZE)
 
-    #heights = [0, font_fps.get_height()+2, font_debug.get_height()*2+2]
     h = [0, 0, FPS_FONT_SIZE, DEBUG_FONT_SIZE, DEBUG_FONT_SIZE]
     heights = []
 
     @classmethod
-    def fps(cls):
+    def fps(cls, ref):
         fps_content = str(int(Game.clock.get_fps()) + 1) + f" fps   frame: {Game.frame+1}"
 
         fps = cls.font_fps.render(fps_content, True, (0, 240, 0), None).convert_alpha()
         Game.screen.blit(fps, (0, cls.heights[0]))
 
     @classmethod
-    def debug(cls):
-        debug_1 = f"Turned_left: {Game.player.turned_left}    Turned_right: {Game.player.turned_right}    " +\
-                  f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}"
-
-        debug_2 = f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}"
+    def debug(cls, ref):
+        debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
+                  f"Player.hitbox.left: {Game.player.hitbox.left}    Player.hitbox.right: {Game.player.hitbox.right}    Starting_x: {Game.player.starting_x}"
+        debug_2 = f"Camera.moving_left: {Camera.moving_left}    Camera.moving_right: {Camera.moving_right}"
 
         backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
         moving = cls.font_debug.render(debug_2, True, (0, 0, 0), None).convert_alpha()
@@ -233,14 +250,14 @@ class Info:
         Game.screen.blit(moving, (0, cls.heights[2]))
 
     @classmethod
-    def debug_mode(cls):
+    def debug_mode(cls, ref):
         cls.heights = []
         for i in range(1, len(cls.h)): # Trzeba upiekszyc
             cls.heights.append(cls.h[i-1] + cls.h[i])
         if cls.show_fps:
-            cls.fps()
+            cls.fps(ref)
         if cls.show_debug:
-            cls.debug()
+            cls.debug(ref)
 
     @staticmethod
     def show_height(target):
@@ -252,10 +269,6 @@ class Info:
 class Level1:
     def __init__(self):
         self.running = True
-        self.background1 = pygame.image.load('Resources/b.jpg').convert() # .convert() - bardzo wazna rzecz!
-        self.background1_position = [0,0]
-        self.background2 = pygame.image.load('Resources/b.jpg').convert()  # .convert() - bardzo wazna rzecz!
-        self.background2_position = [self.background1.get_width(), self.background1_position[1]]
         self.mobs = [Game.player,
                      Goblin(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
                             name='Boss', starting_position=(200, FLOOR), scene=self)]
@@ -277,14 +290,15 @@ class Level1:
         Game.player.jump()
 
     def on_render(self): # Wszelkie renderowanie obrazow
-        Game.screen.blit(self.background1, (self.background1_position[0], self.background1_position[1]))
-        Game.screen.blit(self.background2, (self.background2_position[0], self.background2_position[1]))
+        for background in Camera.backgrounds:
+            Game.screen.blit(background[0], background[1])
+
         for mob in self.mobs:
             mob.show()
             Info.show_height(mob)
 
-        Info.debug_mode()
-        Game.clock.tick(FRAME_RATE) # Ograniczna klatki
+        Info.debug_mode(self)
+        Game.clock.tick(FRAME_RATE)# Ograniczna klatki
 
         pygame.display.update()
 
