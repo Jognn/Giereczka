@@ -28,7 +28,7 @@ BG2_STARTING_X = 2560
 BG2_STARTING_Y = 0
 
 #Player parameters
-JUMP_HEIGHT = 0.25
+JUMP_HEIGHT = 2
 
 
 class Mob:
@@ -43,10 +43,12 @@ class Mob:
         self.scene = kwargs.get('scene', None)  # Scena w jakiej sie znajduje
         self.width = self.current_image.get_width()
         self.height = self.current_image.get_height()
-        self.x = kwargs.get('starting_position', 0)[0]
-        y = kwargs.get('starting_position', FLOOR)[1]
-        self.y = y - self.height
+        self.starting_x = kwargs.get('starting_position', 0)[0] - self.width
+        self.x = self.starting_x
+        self.starting_y = kwargs.get('starting_position', FLOOR)[1] - self.height
+        self.y = self.starting_y
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+
         self.velocity = kwargs.get('velocity', 3)
         self.health = kwargs.get('health', 100)
 
@@ -85,7 +87,7 @@ class Player(Mob):
         self.turned_right = False
         self.turned_left = True
         self.moving_left = True
-        if self.scene.background1_position[0] == 0 or (self.scene.background2_position[0] == 0 and self.x > Game.width/2):
+        if self.scene.background1_position[0] == 0 or (self.scene.background2_position[0] == 0 and self.x > self.starting_x):
             if self.x > self.velocity:
                 self.x -= self.velocity
         else:
@@ -97,7 +99,7 @@ class Player(Mob):
         self.turned_left = False
         self.moving_right = True
         self.turned_right = True
-        if self.scene.background2_position[0] == 0 or self.x < Game.width/2:
+        if self.scene.background2_position[0] == 0 or self.x < self.starting_x:
             if self.x + self.velocity < 1220: #1220 - blad ze zdjeciem! (zostawic na razie), powinno byc zwiazane z Game.width
                 self.x += self.velocity
         else:
@@ -206,13 +208,13 @@ class Info:
 
     @classmethod
     def debug(cls):
-        backgrounds_content = f"Turned_left: {Game.player.turned_left}    Turned_right: {Game.player.turned_right}    " +\
-                              f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}"
+        debug_1 = f"Turned_left: {Game.player.hitbox.center}    Turned_right: {Game.player.turned_right}    " +\
+                  f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}"
 
-        moving_content = f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}"
+        debug_2 = f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}"
 
-        backgrounds = cls.font_debug.render(backgrounds_content, True, (0, 0, 0), None).convert_alpha()
-        moving = cls.font_debug.render(moving_content, True, (0, 0, 0), None).convert_alpha()
+        backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
+        moving = cls.font_debug.render(debug_2, True, (0, 0, 0), None).convert_alpha()
 
         Game.screen.blit(backgrounds, (0, cls.heights[1]))
         Game.screen.blit(moving, (0, cls.heights[2]))
