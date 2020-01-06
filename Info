@@ -1,1 +1,7 @@
-Bulding .exe - python setup.py build
+Build .exe - python setup.py build
+
+Do upiekszenia:
+class Info:
+    h = [0, 0, 24, 22]
+    heights = [h[i-1] + h[i] for i in range(1, len(h))]
+

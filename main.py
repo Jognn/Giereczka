@@ -1,11 +1,18 @@
 import pygame
 
-# Screen parameters:
+#Screen parameters:
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 
+#Frame parameters
 FRAME_RATE = 30
 FRAMES_PER_IMAGE = 3
+
+#Info parameters
+SHOW_FPS = True
+FPS_FONT_SIZE = 22
+SHOW_DEBUG = True
+DEBUG_FONT_SIZE = 24
 
 #Level 1 parameters:
 LEVEL1_WIDTH = 1280*2
@@ -14,9 +21,9 @@ LEVEL1_HEIGHT = 720
 #Floor:
 FLOOR = 575
 
+#Moving backgrounds parameters
 BG1_STARTING_X = 0
 BG1_STARTING_Y = 0
-
 BG2_STARTING_X = 2560
 BG2_STARTING_Y = 0
 
@@ -100,9 +107,9 @@ class Player(Mob):
             self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         else:
             if self.turned_left:
-                self.current_image = self.images_stoi_lewo[(Game.frame//FRAMES_PER_IMAGE) % 3]
+                self.current_image = self.images_stoi_lewo[(Game.frame//FRAMES_PER_IMAGE*2) % 3] # FRAMES_PER_IMAGE*2 - experimenting
             elif self.turned_right:
-                self.current_image = self.images_stoi_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
+                self.current_image = self.images_stoi_prawo[(Game.frame//FRAMES_PER_IMAGE*2) % 3] # FRAMES_PER_IMAGE*2 - experimenting
 
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
@@ -148,8 +155,6 @@ class Game:  # Wszystkie zmienne gry
     pygame.init()
     pygame.display.set_caption('Giereczka')  # Ustawia nazwe okienka
     clock = pygame.time.Clock()
-    font_fps = pygame.font.Font(None, 22)
-    font_debug = pygame.font.Font(None, 24)
     frame = 0
 
     width = SCREEN_WIDTH
@@ -164,6 +169,46 @@ class Game:  # Wszystkie zmienne gry
                     images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png'],
                     name='Tomek', velocity=10, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
+class Info:
+    show_fps = SHOW_FPS
+    show_debug = SHOW_DEBUG
+
+    font_fps = pygame.font.Font(None, FPS_FONT_SIZE)
+    font_debug = pygame.font.Font(None, DEBUG_FONT_SIZE)
+
+    #heights = [0, font_fps.get_height()+2, font_debug.get_height()*2+2]
+    h = [0, 0, FPS_FONT_SIZE, DEBUG_FONT_SIZE, DEBUG_FONT_SIZE]
+    heights = []
+
+    @classmethod
+    def fps(cls):
+        fps_content = str(int(Game.clock.get_fps()) + 1) + f" fps   frame: {Game.frame+1}"
+
+        fps = cls.font_fps.render(fps_content, True, (0, 240, 0), None).convert_alpha()
+        Game.screen.blit(fps, (0, cls.heights[0]))
+
+    @classmethod
+    def debug(cls):
+        backgrounds_content = f"Turned_left: {Game.player.turned_left}    Turned_right: {Game.player.turned_right}    " +\
+                              f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}"
+
+        moving_content = f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}"
+
+        backgrounds = cls.font_debug.render(backgrounds_content, True, (0, 0, 0), None).convert_alpha()
+        moving = cls.font_debug.render(moving_content, True, (0, 0, 0), None).convert_alpha()
+
+        Game.screen.blit(backgrounds, (0, cls.heights[1]))
+        Game.screen.blit(moving, (0, cls.heights[2]))
+
+    @classmethod
+    def show(cls):
+        cls.heights = []
+        for i in range(1, len(cls.h)): # Trzeba upiekszyc
+            cls.heights.append(cls.h[i-1] + cls.h[i])
+        if cls.show_fps:
+            cls.fps()
+        if cls.show_debug:
+            cls.debug()
 
 class Level1:
     def __init__(self):
@@ -193,13 +238,7 @@ class Level1:
         for mob in self.mobs:
             mob.show()
 
-        fps = Game.font_fps.render(str(int(Game.clock.get_fps())) + " fps", True, (0,240,0), None).convert_alpha()
-        backgrounds = Game.font_debug.render(f"Turned_left: {Game.player.turned_left}    Turned_right: {Game.player.turned_right}    " +
-                                             f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
-        moving = Game.font_debug.render(f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}", True, (0, 0, 0), None).convert_alpha()
-        Game.screen.blit(fps, (0, 0))
-        Game.screen.blit(backgrounds, (0, fps.get_height() + 2))
-        Game.screen.blit(moving, (0 , backgrounds.get_height()*2 + 2))
+        Info.show()
         Game.clock.tick(FRAME_RATE) # Ograniczna klatki
 
         pygame.display.update()
