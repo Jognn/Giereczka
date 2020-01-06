@@ -53,6 +53,8 @@ class Mob:
         self.turned_left = False
         self.moving_background_left = False
         self.moving_background_right = True
+        self.jumping = False
+        self.jumpCount = 10
 
     def show(self):
         Game.screen.blit(self.current_image, (self.x, self.y))
@@ -74,6 +76,7 @@ class Player(Mob):
 
         if keys[pygame.K_LEFT]: self.move_left()
         if keys[pygame.K_RIGHT]: self.move_right()
+        if keys[pygame.K_UP]: self.jump()
         self.change_hitbox()
 
     def move_left(self):
@@ -114,6 +117,17 @@ class Player(Mob):
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
+
+    def jump(self):
+        if self.jumpCount >= -10:
+            neg = 1
+            if self.jumpCount < 0:
+                neg = -1
+            self.y -= (self.jumpCount ** 2) * 0.25 * neg
+            self.jumpCount -= 1
+        else:
+            self.jumping = False
+            self.jumpCount = 10
 
 
 class Goblin(Mob):
@@ -227,6 +241,9 @@ class Level1:
     def on_event(self, event):
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): # ESC - wyjsc z gry
             self.running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                Mob.jumping = True
 
     def on_loop(self):  # Wszystkie movementy i inne ify
         for mob in self.mobs:
