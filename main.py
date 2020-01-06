@@ -8,6 +8,9 @@ SCREEN_HEIGHT = 720
 FRAME_RATE = 30
 FRAMES_PER_IMAGE = 3
 
+#Meter
+PIXELS_PER_METER = 8
+
 #Info parameters
 SHOW_FPS = True
 FPS_FONT_SIZE = 22
@@ -28,7 +31,7 @@ BG2_STARTING_X = 2560
 BG2_STARTING_Y = 0
 
 #Player parameters
-JUMP_HEIGHT = 2
+JUMP_HEIGHT = 0.25
 
 
 class Mob:
@@ -218,7 +221,7 @@ class Info:
 
     @classmethod
     def debug(cls):
-        debug_1 = f"Turned_left: {Game.player.hitbox.center}    Turned_right: {Game.player.turned_right}    " +\
+        debug_1 = f"Turned_left: {Game.player.turned_left}    Turned_right: {Game.player.turned_right}    " +\
                   f"Moving_left: {Game.player.moving_left}    Moving_right: {Game.player.moving_right}"
 
         debug_2 = f"Moving bg left: {Game.player.moving_background_left}    Moving bg right: {Game.player.moving_right}"
@@ -230,7 +233,7 @@ class Info:
         Game.screen.blit(moving, (0, cls.heights[2]))
 
     @classmethod
-    def show(cls):
+    def debug_mode(cls):
         cls.heights = []
         for i in range(1, len(cls.h)): # Trzeba upiekszyc
             cls.heights.append(cls.h[i-1] + cls.h[i])
@@ -238,6 +241,13 @@ class Info:
             cls.fps()
         if cls.show_debug:
             cls.debug()
+
+    @staticmethod
+    def show_height(target):
+        n = PIXELS_PER_METER
+        for i in range(int(target.height / n)):
+            pygame.draw.rect(Game.screen, (0, 0, 0), (target.x - n - 2, target.y + n * i, n, n), 1)
+
 
 class Level1:
     def __init__(self):
@@ -251,7 +261,7 @@ class Level1:
                             name='Boss', starting_position=(200, FLOOR), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
-        self.floor = pygame.Rect((0, LEVEL1_HEIGHT-500), (LEVEL1_WIDTH, FLOOR))
+        self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
 
     def on_event(self, event):
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): # ESC - wyjsc z gry
@@ -271,8 +281,9 @@ class Level1:
         Game.screen.blit(self.background2, (self.background2_position[0], self.background2_position[1]))
         for mob in self.mobs:
             mob.show()
+            Info.show_height(mob)
 
-        Info.show()
+        Info.debug_mode()
         Game.clock.tick(FRAME_RATE) # Ograniczna klatki
 
         pygame.display.update()
