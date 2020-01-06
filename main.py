@@ -76,7 +76,6 @@ class Player(Mob):
 
         if keys[pygame.K_LEFT]: self.move_left()
         if keys[pygame.K_RIGHT]: self.move_right()
-        if keys[pygame.K_UP]: self.jump()
         self.change_hitbox()
 
     def move_left(self):
@@ -110,24 +109,25 @@ class Player(Mob):
             self.current_image = self.images_idzie_prawo[(Game.frame//FRAMES_PER_IMAGE) % 3]
         else:
             if self.turned_left:
-                self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting       3 czy 4 klatki?
+                self.current_image = self.images_stoi_lewo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
             elif self.turned_right:
-                self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting       3 czy 4 klatki?
+                self.current_image = self.images_stoi_prawo[(Game.frame//(FRAMES_PER_IMAGE*2)) % 4] # FRAMES_PER_IMAGE*2 - experimenting
 
         self.current_image = pygame.image.load(self.current_image)
         Game.screen.blit(self.current_image, (self.x, self.y))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
     def jump(self):
-        if self.jumpCount >= -10:
-            neg = 1
-            if self.jumpCount < 0:
-                neg = -1
-            self.y -= (self.jumpCount ** 2) * 0.25 * neg
-            self.jumpCount -= 1
-        else:
-            self.jumping = False
-            self.jumpCount = 10
+        if self.jumping:
+            if self.jumpCount >= -10:
+                neg = 1
+                if self.jumpCount < 0:
+                    neg = -1
+                self.y -= (self.jumpCount ** 2) * 0.25 * neg
+                self.jumpCount -= 1
+            else:
+                self.jumping = False
+                self.jumpCount = 10
 
 
 class Goblin(Mob):
@@ -242,12 +242,14 @@ class Level1:
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): # ESC - wyjsc z gry
             self.running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                Mob.jumping = True
+            if event.key == pygame.K_UP or event.key == pygame.K_SPACE:
+                Game.player.jumping = True
 
     def on_loop(self):  # Wszystkie movementy i inne ify
         for mob in self.mobs:
             mob.movement()
+
+        Game.player.jump()
 
     def on_render(self): # Wszelkie renderowanie obrazow
         Game.screen.blit(self.background1, (self.background1_position[0], self.background1_position[1]))
