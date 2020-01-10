@@ -91,9 +91,9 @@ class Player(Mob):
         self.turned_right = False
         self.turned_left = True
         self.moving_left = True
-        if Camera.backgrounds[0][1][0] in range(-2, 2) or self.hitbox.centerx > self.starting_x + self.width:
+        if Camera.backgrounds[0][1][0] in range(-2, 2) or self.hitbox.centerx > self.starting_x + self.width + self.velocity:
             #Warunek nie wyjsca poza mape
-            if self.x > self.velocity:
+            if self.x - self.velocity > 0:
                 self.x -= self.velocity
         else:
             Camera.move_backgrounds_left()
@@ -102,7 +102,7 @@ class Player(Mob):
         self.turned_left = False
         self.moving_right = True
         self.turned_right = True
-        if Camera.backgrounds[1][1][0] in range(-2, 2) or self.hitbox.centerx < self.starting_x:
+        if Camera.backgrounds[1][1][0] in range(-2, 2) or self.hitbox.centerx < self.starting_x + self.width:
             # Warunek nie wyjsca poza mape
             if self.hitbox.right + self.velocity < Game.width:
                 self.x += self.velocity
@@ -243,7 +243,7 @@ class Info:
     @classmethod
     def debug(cls):
         debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
-                  f"Player.hitbox.left: {Game.player.hitbox.left}    Player.hitbox.right: {Game.player.hitbox.right}    Starting_x: {Game.player.starting_x}"
+                  f"Player.hitbox.centerx: {Game.player.hitbox.centerx}    Player.hitbox.right: {Game.player.hitbox.right}    Starting_x: {Game.player.starting_x}"
         debug_2 = f"Camera.moving_left: {Camera.moving_left}    Camera.moving_right: {Camera.moving_right}"
 
         backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
