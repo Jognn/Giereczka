@@ -202,7 +202,6 @@ class WorldGenerator:
     def __init__(self, name):
         with open('Resources/map.txt', 'r') as file:
             self.map = file.read()
-        print(len(self.map.strip()))
         self.block = pygame.image.load('Resources/block.jpg').convert_alpha()
         self.grass = pygame.image.load('Resources/trawa.png').convert_alpha()
         self.offset_x = 0
@@ -215,7 +214,7 @@ class WorldGenerator:
             elif item == "@":
                 Game.screen.blit(self.block, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
             elif item == "&":
-                Game.screen.blit(self.grass, (index%123*32 + self.offset_x, int(index/123)*32 + self.offset_y))
+                Game.screen.blit(self.grass, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
 
 class Camera:
     focus = Game.player # Obecny target kamery
@@ -293,9 +292,9 @@ class Info:
 class Level1:
     def __init__(self):
         self.running = True
-        self.mobs = [Game.player,
-                     Goblin(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
-                            name='Boss', starting_position=(200, FLOOR), scene=self)]
+        self.mobs = [Game.player]
+        #Goblin(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
+        #                          name='Boss', starting_position=(200, FLOOR), scene=self)
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
