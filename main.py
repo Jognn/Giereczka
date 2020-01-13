@@ -143,7 +143,7 @@ class Player(Mob):
                 self.jumpCount = 10
 
 
-class Goblin(Mob):
+class Ziemniak(Mob):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.images = kwargs.get('images')
@@ -197,6 +197,7 @@ class Game:  # Wszystkie zmienne gry
                     images_skacze_lewo = ['Resources/Mobs/Player/player_skacze_lewo1.png'],
                     name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
+
 class WorldGenerator:
 
     def __init__(self, name):
@@ -215,6 +216,7 @@ class WorldGenerator:
                 Game.screen.blit(self.block, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
             elif item == "&":
                 Game.screen.blit(self.grass, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
+
 
 class Camera:
     focus = Game.player # Obecny target kamery
@@ -292,9 +294,9 @@ class Info:
 class Level1:
     def __init__(self):
         self.running = True
-        self.mobs = [Game.player]
-        #Goblin(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
-        #                          name='Boss', starting_position=(200, FLOOR), scene=self)
+        self.mobs = [Game.player,
+                     Ziemniak(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
+                         name='Boss', starting_position=(200, FLOOR), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
