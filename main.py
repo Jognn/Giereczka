@@ -36,13 +36,13 @@ JUMP_HEIGHT = 0.25
 
 
 class Mob:
-    def __init__(self, **kwargs):  # name = None, starting_position = (0,FLOOR), velocity = 1, health = 100, scene = None
+    def __init__(self, **kwargs):  # name = None, starting_position = (0,FLOOR), velocity = 3, health = 100, scene = None
         self.images_stoi_prawo = kwargs.get('images_stoi_prawo', ['Resources/Mobs/default.png'])
         self.images_stoi_lewo = kwargs.get('images_stoi_lewo', ['Resources/Mobs/default.png'])
         self.images_idzie_prawo = kwargs.get('images_idzie_prawo', ['Resources/Mobs/default.png'])
         self.images_idzie_lewo = kwargs.get('images_idzie_lewo', ['Resources/Mobs/default.png'])
-        self.images_skacze_prawo = kwargs.get('images_skacze_prawo', ['Resources/Mobs/Player/player_skacze_prawo1.png'])
-        self.images_skacze_lewo = kwargs.get('images_skacze_lewo', ['Resources/Mobs/Player/player_skacze_lewo1.png'])
+        self.images_skacze_prawo = kwargs.get('images_skacze_prawo', ['Resources/Mobs/default.png'])
+        self.images_skacze_lewo = kwargs.get('images_skacze_lewo', ['Resources/Mobs/default.png'])
         self.current_image = pygame.image.load(self.images_stoi_prawo[0]).convert_alpha()
 
         self.name = kwargs.get('name', None)
@@ -143,7 +143,7 @@ class Player(Mob):
                 self.jumpCount = 10
 
 
-class Goblin(Mob):
+class Ziemniak(Mob):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.images = kwargs.get('images')
@@ -198,10 +198,30 @@ class Game:  # Wszystkie zmienne gry
                     name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
 
+class WorldGenerator:
+    def __init__(self, name):
+        with open('Resources/map.txt', 'r') as file:
+            self.map = file.read()
+        self.block = pygame.image.load('Resources/block.jpg').convert_alpha()
+        self.grass = pygame.image.load('Resources/trawa.png').convert_alpha()
+        self.offset_x = 0
+        self.offset_y = 0
+
+    def place_block(self):
+        for index, item in enumerate(self.map):
+            if item == "*":
+                continue
+            elif item == "@":
+                Game.screen.blit(self.block, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
+            elif item == "&":
+                Game.screen.blit(self.grass, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
+
+
 class Camera:
     focus = Game.player # Obecny target kamery
     moving_left = False
     moving_right = False
+    bloczki = WorldGenerator('TEST')
 
     backgrounds = [[pygame.image.load('Resources/b.jpg').convert(), (2560*i, 0)] for i in range (2)]# [*Surface*, (x,y)]
 
@@ -209,12 +229,12 @@ class Camera:
     def move_backgrounds_left(cls):
         cls.moving_left = True
         cls.backgrounds= [[background[0], (background[1][0] + cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
-
+        cls.bloczki.offset_x += Game.player.velocity
     @classmethod
     def move_backgrounds_right(cls):
         cls.moving_right = True
         cls.backgrounds= [[background[0], (background[1][0] - cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
-
+        cls.bloczki.offset_x -= Game.player.velocity
     @classmethod
     def update(cls):
         cls.moving_left = False
@@ -274,8 +294,8 @@ class Level1:
     def __init__(self):
         self.running = True
         self.mobs = [Game.player,
-                     Goblin(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
-                            name='Boss', starting_position=(200, FLOOR), scene=self)]
+                     Ziemniak(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
+                         name='Boss', starting_position=(200, FLOOR), scene=self)]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
@@ -297,9 +317,11 @@ class Level1:
         for background in Camera.backgrounds:
             Game.screen.blit(background[0], background[1])
 
+        Camera.bloczki.place_block()
+
         for mob in self.mobs:
             mob.show()
-            Info.show_height(mob)
+            #Info.show_height(mob)
 
         Info.show_info()
         Game.clock.tick(FRAME_RATE)# Ograniczna klatki
