@@ -53,7 +53,7 @@ class Mob:
         self.x = self.starting_x
         self.starting_y = kwargs.get('starting_position', FLOOR)[1] - self.height
         self.y = self.starting_y
-        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.hitbox = pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 
         self.velocity = kwargs.get('velocity', 3)
         self.health = kwargs.get('health', 100)
@@ -70,7 +70,7 @@ class Mob:
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
     def change_hitbox(self):
-        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.hitbox = pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 
 
 class Player(Mob):
@@ -127,7 +127,7 @@ class Player(Mob):
 
 
         self.current_image = pygame.image.load(self.current_image).convert_alpha()
-        Game.screen.blit(self.current_image, (self.x, self.y))
+        Game.screen.blit(self.current_image, (int(self.x), int(self.y)))
         pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
     def jump(self):
@@ -215,13 +215,13 @@ class Game:  # Wszystkie zmienne gry
                     images_idzie_lewo = ['Resources/Mobs/Player/player_idzie_lewo1.png', 'Resources/Mobs/Player/player_idzie_lewo2.png', 'Resources/Mobs/Player/player_idzie_lewo3.png', 'Resources/Mobs/Player/player_idzie_lewo2.png'],
                     images_skacze_prawo = ['Resources/Mobs/Player/player_skacze_prawo1.png'],
                     images_skacze_lewo = ['Resources/Mobs/Player/player_skacze_lewo1.png'],
-                    name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
+                    name='Tomek', velocity=4, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
     ziemniak = Ziemniak(images_stoi_prawo=['Resources/Mobs/Enemy1/ziemniak_stoi_prawo1.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo2.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo3.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo2.png'],
                     images_stoi_lewo=['Resources/Mobs/Enemy1/ziemniak_stoi_lewo1.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo2.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo3.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo2.png'],
                     images_idzie_prawo=['Resources/Mobs/Enemy1/ziemniak_idzie_prawo1.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_prawo2.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_prawo3.png'],
                     images_idzie_lewo=['Resources/Mobs/Enemy1/ziemniak_idzie_lewo1.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_lewo2.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_lewo3.png'],
-                    name='Ziemniak', velocity=4, starting_position=(300, FLOOR))
+                    name='Ziemniak', velocity=3, starting_position=(300, FLOOR))
 
 class Tile:
     def __init__(self, image, x, y):
@@ -230,6 +230,7 @@ class Tile:
         self.y = y
         self.width = self.image.get_width()
         self.height = self.image.get_height()
+
 
 class WorldGenerator:
     def __init__(self, level_tilemap):
@@ -311,6 +312,8 @@ class Info:
         debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
                   f"Ziemniak.turned_left: {level1.mobs[1].turned_left}    Ziemniak.turned_right: {level1.mobs[1].turned_right}    Showed tiles: {len(level1.map.current_tiles)}"
         debug_2 = f"Zomniak.moving_left: {level1.mobs[1].moving_left}    Ziemniak.moving_right: {level1.mobs[1].moving_right}"
+
+
 
         backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
         moving = cls.font_debug.render(debug_2, True, (0, 0, 0), None).convert_alpha()
