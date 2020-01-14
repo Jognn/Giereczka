@@ -36,13 +36,13 @@ JUMP_HEIGHT = 0.25
 
 
 class Mob:
-    def __init__(self, **kwargs):  # name = None, starting_position = (0,FLOOR), velocity = 1, health = 100, scene = None
+    def __init__(self, **kwargs):  # name = None, starting_position = (0,FLOOR), velocity = 3, health = 100, scene = None
         self.images_stoi_prawo = kwargs.get('images_stoi_prawo', ['Resources/Mobs/default.png'])
         self.images_stoi_lewo = kwargs.get('images_stoi_lewo', ['Resources/Mobs/default.png'])
         self.images_idzie_prawo = kwargs.get('images_idzie_prawo', ['Resources/Mobs/default.png'])
         self.images_idzie_lewo = kwargs.get('images_idzie_lewo', ['Resources/Mobs/default.png'])
-        self.images_skacze_prawo = kwargs.get('images_skacze_prawo', ['Resources/Mobs/Player/player_skacze_prawo1.png'])
-        self.images_skacze_lewo = kwargs.get('images_skacze_lewo', ['Resources/Mobs/Player/player_skacze_lewo1.png'])
+        self.images_skacze_prawo = kwargs.get('images_skacze_prawo', ['Resources/Mobs/default.png'])
+        self.images_skacze_lewo = kwargs.get('images_skacze_lewo', ['Resources/Mobs/default.png'])
         self.current_image = pygame.image.load(self.images_stoi_prawo[0]).convert_alpha()
 
         self.name = kwargs.get('name', None)
@@ -199,7 +199,6 @@ class Game:  # Wszystkie zmienne gry
 
 
 class WorldGenerator:
-
     def __init__(self, name):
         with open('Resources/map.txt', 'r') as file:
             self.map = file.read()
