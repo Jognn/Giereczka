@@ -198,43 +198,64 @@ class Game:  # Wszystkie zmienne gry
                     name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
 
-class WorldGenerator:
-    def __init__(self, name):
-        with open('Resources/map.txt', 'r') as file:
-            self.map = file.read()
-        self.block = pygame.image.load('Resources/block.jpg').convert_alpha()
-        self.grass = pygame.image.load('Resources/trawa.png').convert_alpha()
-        self.offset_x = 0
-        self.offset_y = 0
+class Tile:
+    def __init__(self, image, x, y):
+        self.image = pygame.image.load(image).convert_alpha()
+        self.x = x
+        self.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
 
-    def place_block(self):
-        for index, item in enumerate(self.map):
-            if item == "*":
-                continue
-            elif item == "@":
-                Game.screen.blit(self.block, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
-            elif item == "&":
-                Game.screen.blit(self.grass, (index%122*32 + self.offset_x, int(index/122)*32 + self.offset_y))
+class WorldGenerator:
+    def __init__(self, level_tilemap):
+        with open(level_tilemap, 'r') as file:
+            self.tilemap = list()
+            lines = file.readlines()
+            for y in range(len(lines)):
+                for x in range(len(lines[y])):
+                    position = lines[y][x]
+                    if position == ".":
+                        continue
+                    elif position == "@":
+                        self.tilemap.append(Tile('Resources/block.jpg', 32 * x, 32 * y))
+                    elif position == "&":
+                        self.tilemap.append(Tile('Resources/trawa.png', 32 * x, 32 * y))
+
+    def show_blocks(self):
+        self.current_tiles = list()
+        for tile in self.tilemap:
+            if Camera.x - 32 <= tile.x <= Camera.right and Camera.y <= tile.y <= Camera.down:
+                self.current_tiles.append(tile)
+                Game.screen.blit(tile.image, (tile.x - Camera.x, tile.y))
 
 
 class Camera:
     focus = Game.player # Obecny target kamery
     moving_left = False
     moving_right = False
-    bloczki = WorldGenerator('TEST')
+    x = 0
+    y = 0
+    width = Game.screen.get_width()
+    height = Game.screen.get_height()
+    right = x + width
+    down = y + height
 
     backgrounds = [[pygame.image.load('Resources/b.jpg').convert(), (2560*i, 0)] for i in range (2)]# [*Surface*, (x,y)]
 
     @classmethod
     def move_backgrounds_left(cls):
+        cls.x -= cls.focus.velocity
+        cls.right -= cls.focus.velocity
         cls.moving_left = True
         cls.backgrounds= [[background[0], (background[1][0] + cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
-        cls.bloczki.offset_x += Game.player.velocity
+
     @classmethod
     def move_backgrounds_right(cls):
+        cls.x += cls.focus.velocity
+        cls.right += cls.focus.velocity
         cls.moving_right = True
         cls.backgrounds= [[background[0], (background[1][0] - cls.focus.velocity, background[1][1])] for background in cls.backgrounds]
-        cls.bloczki.offset_x -= Game.player.velocity
+
     @classmethod
     def update(cls):
         cls.moving_left = False
@@ -263,7 +284,7 @@ class Info:
     @classmethod
     def debug(cls):
         debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
-                  f"Player.hitbox.centerx: {Game.player.hitbox.centerx}    Player.hitbox.right: {Game.player.hitbox.right}    Starting_x: {Game.player.starting_x}"
+                  f"Camera.x: {Camera.x}    Camera.y: {Camera.y}    Showed tiles: {len(level1.map.current_tiles)}"
         debug_2 = f"Camera.moving_left: {Camera.moving_left}    Camera.moving_right: {Camera.moving_right}"
 
         backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
@@ -275,9 +296,6 @@ class Info:
     @classmethod
     def show_info(cls):
         if SHOW_INFO:
-            # cls.heights = []
-            # for i in range(1, len(cls.h)): # Trzeba upiekszyc
-            #     cls.heights.append(cls.h[i-1] + cls.h[i])
             if cls.show_fps:
                 cls.fps()
             if cls.show_debug:
@@ -299,6 +317,7 @@ class Level1:
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
+        self.map = WorldGenerator('Resources/tilemap.txt')
 
     def on_event(self, event):
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): # ESC - wyjsc z gry
@@ -317,7 +336,7 @@ class Level1:
         for background in Camera.backgrounds:
             Game.screen.blit(background[0], background[1])
 
-        Camera.bloczki.place_block()
+        self.map.show_blocks()
 
         for mob in self.mobs:
             mob.show()
@@ -339,5 +358,5 @@ class Level1:
 
 
 if __name__ == "__main__":
-    leve1 = Level1()
-    leve1.start()
+    level1 = Level1()
+    level1.start()
