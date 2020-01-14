@@ -155,19 +155,23 @@ class Ziemniak(Mob):
         pozycja_gracza_p = Game.player.hitbox.right
         #Ruch w lewo
         if self.hitbox.left > pozycja_gracza_p:
+            self.moving_right = False
             self.moving_left = True
-            if self.hitbox.left - self.velocity <= pozycja_gracza_l:
+            self.turned_left = True
+            self.turned_right = False
+            if self.hitbox.left - self.velocity <= pozycja_gracza_p:
                 self.moving_left = False
             else:
-                if not self.current_image == self.images[0]: self.current_image = pygame.image.load(self.images[0]).convert_alpha()
                 self.x -= self.velocity
         #Ruch w prawo
         elif self.hitbox.right < pozycja_gracza_l:
+            self.moving_left = False
+            self.turned_right = True
             self.moving_right = True
+            self.turned_left = False
             if self.hitbox.right + self.velocity >= pozycja_gracza_l:
                 self.moving_right = False
             else:
-                if not self.current_image == self.images[1]: self.current_image = pygame.image.load(self.images[1]).convert_alpha()
                 self.x += self.velocity
         #Ruch wzgledny
         if Camera.moving_left:
@@ -176,6 +180,22 @@ class Ziemniak(Mob):
             self.x -= Camera.focus.velocity
         self.change_hitbox() # Zmienia pozycje hitboxa
 
+    def show(self):
+        if self.moving_left:
+            self.current_image = self.images_idzie_lewo[(Game.frame // FRAMES_PER_IMAGE) % 3]
+        elif self.moving_right:
+            self.current_image = self.images_idzie_prawo[(Game.frame // FRAMES_PER_IMAGE) % 3]
+        else:
+            if self.turned_left:
+                self.current_image = self.images_stoi_lewo[
+                    (Game.frame // (FRAMES_PER_IMAGE * 2)) % 4]  # FRAMES_PER_IMAGE*2 - experimenting
+            elif self.turned_right:
+                self.current_image = self.images_stoi_prawo[
+                    (Game.frame // (FRAMES_PER_IMAGE * 2)) % 4]  # FRAMES_PER_IMAGE*2 - experimenting
+
+        self.current_image = pygame.image.load(self.current_image).convert_alpha()
+        Game.screen.blit(self.current_image, (self.x, self.y))
+        pygame.draw.rect(Game.screen, (240, 0, 0), self.hitbox, 2)
 
 class Game:  # Wszystkie zmienne gry
     pygame.init()
@@ -197,6 +217,11 @@ class Game:  # Wszystkie zmienne gry
                     images_skacze_lewo = ['Resources/Mobs/Player/player_skacze_lewo1.png'],
                     name='Tomek', velocity=6, starting_position=(SCREEN_WIDTH/2, FLOOR))
 
+    ziemniak = Ziemniak(images_stoi_prawo=['Resources/Mobs/Enemy1/ziemniak_stoi_prawo1.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo2.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo3.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_prawo2.png'],
+                    images_stoi_lewo=['Resources/Mobs/Enemy1/ziemniak_stoi_lewo1.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo2.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo3.png', 'Resources/Mobs/Enemy1/ziemniak_stoi_lewo2.png'],
+                    images_idzie_prawo=['Resources/Mobs/Enemy1/ziemniak_idzie_prawo1.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_prawo2.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_prawo3.png'],
+                    images_idzie_lewo=['Resources/Mobs/Enemy1/ziemniak_idzie_lewo1.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_lewo2.png', 'Resources/Mobs/Enemy1/ziemniak_idzie_lewo3.png'],
+                    name='Ziemniak', velocity=4, starting_position=(300, FLOOR))
 
 class Tile:
     def __init__(self, image, x, y):
@@ -284,8 +309,8 @@ class Info:
     @classmethod
     def debug(cls):
         debug_1 = f"Background_positions: {list(background[1] for background in Camera.backgrounds)}    " +\
-                  f"Camera.x: {Camera.x}    Camera.y: {Camera.y}    Showed tiles: {len(level1.map.current_tiles)}"
-        debug_2 = f"Camera.moving_left: {Camera.moving_left}    Camera.moving_right: {Camera.moving_right}"
+                  f"Ziemniak.turned_left: {level1.mobs[1].turned_left}    Ziemniak.turned_right: {level1.mobs[1].turned_right}    Showed tiles: {len(level1.map.current_tiles)}"
+        debug_2 = f"Zomniak.moving_left: {level1.mobs[1].moving_left}    Ziemniak.moving_right: {level1.mobs[1].moving_right}"
 
         backgrounds = cls.font_debug.render(debug_1, True, (0, 0, 0), None).convert_alpha()
         moving = cls.font_debug.render(debug_2, True, (0, 0, 0), None).convert_alpha()
@@ -311,9 +336,7 @@ class Info:
 class Level1:
     def __init__(self):
         self.running = True
-        self.mobs = [Game.player,
-                     Ziemniak(images=['Resources/Mobs/boss1.png', 'Resources/Mobs/boss2.png'], images_stoi_prawo=['Resources/Mobs/boss1.png'],
-                         name='Boss', starting_position=(200, FLOOR), scene=self)]
+        self.mobs = [Game.player, Game.ziemniak]
 
         Game.player.scene = self  # Setting player's scene
         self.floor = pygame.Rect((0, LEVEL1_HEIGHT-FLOOR), (LEVEL1_WIDTH, LEVEL1_HEIGHT-FLOOR))
