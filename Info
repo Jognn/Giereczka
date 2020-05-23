@@ -1,0 +1,9 @@
+Build .exe - python setup.py build
+
+1m - 8 pikseli
+
+Do upiekszenia:
+class Info:
+    h = [0, 0, 24, 22]
+    heights = [h[i-1] + h[i] for i in range(1, len(h))]
+
